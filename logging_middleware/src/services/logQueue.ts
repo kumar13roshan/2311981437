@@ -51,6 +51,10 @@ export class LogQueue {
 
   async flush(): Promise<void> {
     if (this.flushing || this.queue.length === 0) return;
+    if (!this.canSendRemoteLogs()) {
+      this.queue.splice(0, this.config.batchSize);
+      return;
+    }
 
     this.flushing = true;
     const batch = this.queue.splice(0, this.config.batchSize);
@@ -101,5 +105,15 @@ export class LogQueue {
     if (typeof timerWithUnref.unref === 'function') {
       timerWithUnref.unref();
     }
+  }
+
+  private canSendRemoteLogs(): boolean {
+    return Boolean(
+      this.config.evaluationBaseUrl
+      && this.config.email
+      && this.config.name
+      && this.config.rollNo
+      && this.config.accessCode,
+    );
   }
 }
