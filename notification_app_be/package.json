@@ -1,16 +1,32 @@
 {
   "name": "notification-app-be",
-  "version": "1.0.0",
-  "description": "Notification Platform backend API",
-  "main": "server.js",
+  "version": "2.0.0",
+  "description": "Affordmed notification backend with Stage 1-7 APIs",
+  "type": "module",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js"
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx src/healthcheck.ts"
   },
+  "license": "MIT",
   "dependencies": {
+    "affordmed-logging-middleware": "file:../logging_middleware",
     "axios": "^1.7.9",
+    "compression": "^1.7.5",
     "cors": "^2.8.5",
-    "express": "^4.18.3"
+    "dotenv": "^16.4.7",
+    "express": "^4.18.3",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   }
 }
-

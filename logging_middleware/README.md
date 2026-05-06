@@ -1,27 +1,32 @@
 # Logging Middleware
 
-Reusable logger for the Campus Hiring Full Stack Evaluation.
+Reusable TypeScript package exposing:
 
-```js
-const { Log } = require('./logging_middleware/logger');
-
-await Log('backend', 'error', 'handler', 'received string, expected bool');
+```ts
+Log(stack, level, packageName, message)
+createLogger(config)
+authenticate()
+register()
+flushLogs()
 ```
 
-The exact request JSON sent to the evaluation service is:
+Features:
 
-```json
-{
-  "stack": "backend",
-  "level": "error",
-  "package": "handler",
-  "message": "received string, expected bool"
-}
+- Dynamic registration and authentication
+- Bearer token caching and refresh before expiry
+- Retry handling for failures, `401`, and rate-limit responses
+- Axios interceptors
+- Request IDs and timestamps
+- Validation for stack, level, and package
+- Async queue and batching
+- Console fallback with structured JSON output
+- Browser and Node usage through configurable environment values
+
+Install:
+
+```bash
+npm install
+npm run typecheck
 ```
 
-Set `LOG_ACCESS_TOKEN` when the logging API requires:
-
-```http
-Authorization: Bearer <access_token>
-```
-
+All sensitive fields come from environment variables.

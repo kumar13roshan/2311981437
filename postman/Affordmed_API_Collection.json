@@ -1,0 +1,153 @@
+{
+  "info": {
+    "name": "Affordmed Full Stack Evaluation",
+    "description": "Registration, authentication, logging, backend APIs, priority inbox, and health checks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('access_token');",
+          "const expiresAt = Number(pm.environment.get('tokenExpiresAt') || 0);",
+          "const needsToken = !token || Date.now() > expiresAt;",
+          "if (needsToken && pm.info.requestName !== 'Register' && pm.info.requestName !== 'Authenticate') {",
+          "  pm.sendRequest({",
+          "    url: pm.environment.get('evaluationBaseUrl') + '/auth',",
+          "    method: 'POST',",
+          "    header: { 'Content-Type': 'application/json' },",
+          "    body: { mode: 'raw', raw: JSON.stringify({",
+          "      email: pm.environment.get('email'),",
+          "      name: pm.environment.get('name'),",
+          "      rollNo: pm.environment.get('rollNo'),",
+          "      accessCode: pm.environment.get('accessCode'),",
+          "      clientID: pm.environment.get('clientID'),",
+          "      clientSecret: pm.environment.get('clientSecret')",
+          "    }) }",
+          "  }, function (err, res) {",
+          "    if (!err && res && res.code < 300) {",
+          "      const json = res.json();",
+          "      const nextToken = json.access_token || json.accessToken || json.token;",
+          "      if (nextToken) pm.environment.set('access_token', nextToken);",
+          "      pm.environment.set('tokenExpiresAt', String(Date.now() + Number(json.expires_in || json.expiresIn || 1800) * 1000 - 30000));",
+          "    }",
+          "  });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Pre-Test Setup",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('registration success', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const json = pm.response.json();",
+                  "const clientID = json.clientID || json.clientId || json.client_id;",
+                  "const clientSecret = json.clientSecret || json.client_secret;",
+                  "if (clientID) pm.environment.set('clientID', clientID);",
+                  "if (clientSecret) pm.environment.set('clientSecret', clientSecret);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"name\": \"{{name}}\",\n  \"mobileNo\": \"{{mobileNo}}\",\n  \"githubUsername\": \"{{githubUsername}}\",\n  \"rollNo\": \"{{rollNo}}\",\n  \"accessCode\": \"{{accessCode}}\"\n}"
+            },
+            "url": "{{evaluationBaseUrl}}/register"
+          }
+        },
+        {
+          "name": "Authenticate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('authentication success', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const json = pm.response.json();",
+                  "const token = json.access_token || json.accessToken || json.token;",
+                  "pm.expect(token).to.be.a('string').and.not.empty;",
+                  "pm.environment.set('access_token', token);",
+                  "pm.environment.set('tokenExpiresAt', String(Date.now() + Number(json.expires_in || json.expiresIn || 1800) * 1000 - 30000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"name\": \"{{name}}\",\n  \"rollNo\": \"{{rollNo}}\",\n  \"accessCode\": \"{{accessCode}}\",\n  \"clientID\": \"{{clientID}}\",\n  \"clientSecret\": \"{{clientSecret}}\"\n}"
+            },
+            "url": "{{evaluationBaseUrl}}/auth"
+          }
+        },
+        {
+          "name": "Logging API",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stack\": \"backend\",\n  \"level\": \"info\",\n  \"package\": \"service\",\n  \"message\": \"Postman logging API test\"\n}"
+            },
+            "url": "{{evaluationBaseUrl}}/logs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notification Backend",
+      "item": [
+        { "name": "Health Check", "request": { "method": "GET", "url": "{{backendBaseUrl}}/health" } },
+        {
+          "name": "Create Notification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => pm.expect(pm.response.code).to.eql(201));",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.id) pm.environment.set('notificationId', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Placement Update\",\n  \"message\": \"Interview slot has been scheduled.\",\n  \"type\": \"Placement\"\n}"
+            },
+            "url": "{{backendBaseUrl}}{{apiPrefix}}/notifications"
+          }
+        },
+        { "name": "Get Notifications", "request": { "method": "GET", "url": "{{backendBaseUrl}}{{apiPrefix}}/notifications?page=1&limit=10&sort=desc" } },
+        { "name": "Priority Inbox", "request": { "method": "GET", "url": "{{backendBaseUrl}}{{apiPrefix}}/notifications/priority?limit=10" } },
+        { "name": "Mark Notification Read", "request": { "method": "PATCH", "url": "{{backendBaseUrl}}{{apiPrefix}}/notifications/{{notificationId}}/read" } },
+        { "name": "Delete Notification", "request": { "method": "DELETE", "url": "{{backendBaseUrl}}{{apiPrefix}}/notifications/{{notificationId}}" } }
+      ]
+    }
+  ]
+}

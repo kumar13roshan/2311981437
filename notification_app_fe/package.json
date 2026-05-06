@@ -1,26 +1,31 @@
 {
   "name": "notification-app-fe",
-  "version": "1.0.0",
-  "private": true,
+  "version": "2.0.0",
+  "description": "React Material UI notification frontend for Affordmed evaluation",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "dev": "vite --host 0.0.0.0 --port 3000 --strictPort",
+    "start": "vite --host 0.0.0.0 --port 3000 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3000 --strictPort",
+    "typecheck": "tsc --noEmit"
   },
+  "license": "MIT",
   "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@mui/icons-material": "^5.16.7",
-    "@mui/material": "^5.16.7",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.3.1",
+    "@mui/material": "^6.3.1",
+    "affordmed-logging-middleware": "file:../logging_middleware",
     "axios": "^1.7.9",
-    "date-fns": "^3.6.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "vite": "^6.0.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^5.4.11"
+    "typescript": "^5.7.3"
   }
 }
-

@@ -1,8 +1,28 @@
+# Dependencies
 node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build and coverage
 dist/
 build/
-.env
-.env.local
 coverage/
-*.log
+package-lock.json
 
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime data
+*.pid
+*.seed
